@@ -134,20 +134,28 @@ int main(void)
     std::cout << glGetString(GL_VERSION) << std::endl;
 
     // clang-format off
-    float positions[6] = {
-       -0.5f,  -0.5f,
-        0.0f,   0.5f,
-        0.5f,  -0.5f
+    float positions[] = {
+        -0.5f, -0.5f,
+         0.5f, -0.5f,
+         0.5f,  0.5f,
+        -0.5f,  0.5f,
     };
     // clang-format on
 
-    unsigned int buffer;
-    glGenBuffers(1, &buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), positions, GL_STATIC_DRAW);
+    unsigned int indecies[] = {0, 1, 2, 2, 3, 0};
+
+    unsigned int array_buffer;
+    glGenBuffers(1, &array_buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, array_buffer);
+    glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(float), positions, GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+
+    unsigned int index_buffer;
+    glGenBuffers(1, &index_buffer);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indecies, GL_STATIC_DRAW);
 
     ShaderProgramSource shaderSource = ParseShaderFile("./res/shaders/basic.glsl");
     unsigned int shader = CreateShader(shaderSource.VertexSource, shaderSource.FragmentSource);
@@ -157,11 +165,8 @@ int main(void)
     while (!glfwWindowShouldClose(window))
     {
         glClear(GL_COLOR_BUFFER_BIT);
-
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
         glfwSwapBuffers(window);
-
         glfwPollEvents();
     }
 
