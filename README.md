@@ -1,4 +1,8 @@
-# TIEA3112 Creative application of basic computer graphics
+# OpenGL Demo
+
+## Docs and tutorials
+
+- [docs.GL](https://docs.gl/)
 
 ## Building
 
