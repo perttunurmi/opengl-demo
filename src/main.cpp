@@ -4,15 +4,18 @@
 #include <cstdlib>
 #include <iostream>
 
-int main(void) {
+int main(void)
+{
     GLFWwindow *window;
 
     /* Initialize the library */
-    if (!glfwInit()) return -1;
+    if (!glfwInit())
+        return -1;
     /* Create a windowed mode window and
      * its OpenGL context */
     window = glfwCreateWindow(640, 480, "OpenGL DEMO", NULL, NULL);
-    if (!window) {
+    if (!window)
+    {
         glfwTerminate();
         return -1;
     }
@@ -21,24 +24,38 @@ int main(void) {
      */
     glfwMakeContextCurrent(window);
 
-    if (glewInit() != GLEW_OK) {
+    if (glewInit() != GLEW_OK)
+    {
         std::cerr << "ERROR: GLEW NOT OK" << std::endl;
         exit(EXIT_FAILURE);
     }
 
     std::cout << glGetString(GL_VERSION) << std::endl;
 
+    // clang-format off
+    float positions[6] = {
+       -0.5f,  -0.5f,
+        0.0f,   0.5f,
+        0.5f,  -0.5f
+    };
+    // clang-format on
+
+    unsigned int buffer;
+    glGenBuffers(1, &buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), positions, GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+
     /* Loop until the user closes the
      * window */
-    while (!glfwWindowShouldClose(window)) {
+    while (!glfwWindowShouldClose(window))
+    {
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glBegin(GL_TRIANGLES);
-        glVertex2f(-0.5f, -0.5f);
-        glVertex2f(0.0f, 0.5f);
-        glVertex2f(0.5f, -0.5f);
-        glEnd();
+        glDrawArrays(GL_TRIANGLES, 0, 3);
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
