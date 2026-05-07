@@ -16,6 +16,7 @@
       deps = with pkgs; [
         gcc
         glfw
+        glew
       ];
     in
     {
@@ -30,7 +31,7 @@
       packages.${system}.default =
         let
           OUTPUT_NAME = "demo-cpp";
-          CFLAGS = "-Wall -lGL -lglfw";
+          CFLAGS = "-Wall -lGL -lglfw -lGLEW";
           MAIN = src/main.cpp;
         in
 
