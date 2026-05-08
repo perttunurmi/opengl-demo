@@ -17,6 +17,8 @@ bool GLLogCall(const char *function, const char *file, int line)
         << "[OpenGL Error]:"
         << ", ERR ENUM: "    << error
         << " FUNC: "         << function
+        << " FILE: "         << file
+        << " LINE: "         << line
         << "\n";
         // clang-format on
         return false;
