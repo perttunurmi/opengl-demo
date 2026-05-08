@@ -89,10 +89,7 @@ static ShaderProgramSource ParseShaderFile(const std::string &filepath)
         }
     }
 
-    return {
-        .VertexSource = ss[(int)ShaderType::VERTEX].str(),
-        .FragmentSource = ss[(int)ShaderType::FRAGMENT].str()
-    };
+    return {.VertexSource = ss[(int)ShaderType::VERTEX].str(), .FragmentSource = ss[(int)ShaderType::FRAGMENT].str()};
 }
 
 static unsigned int CompileShader(unsigned int type, const std::string &source)
@@ -161,6 +158,8 @@ int main(void)
     // Make the window's context current
     glfwMakeContextCurrent(window);
 
+    glfwSwapInterval(1);
+
     // Try to initialize glew
     if (glewInit() != GLEW_OK)
     {
@@ -182,27 +181,50 @@ int main(void)
     unsigned int indices[] = {0, 1, 2, 2, 3, 0};
 
     unsigned int array_buffer;
-    glGenBuffers(1, &array_buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, array_buffer);
-    glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(float), positions, GL_STATIC_DRAW);
+    GLCall(glGenBuffers(1, &array_buffer));
+    GLCall(glBindBuffer(GL_ARRAY_BUFFER, array_buffer));
+    GLCall(glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(float), positions, GL_STATIC_DRAW));
 
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+    GLCall(glEnableVertexAttribArray(0));
+    GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0));
 
     unsigned int index_buffer;
-    glGenBuffers(1, &index_buffer);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indices, GL_STATIC_DRAW);
+    GLCall(glGenBuffers(1, &index_buffer));
+    GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer));
+    GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indices, GL_STATIC_DRAW));
 
     ShaderProgramSource shaderSource = ParseShaderFile("./res/shaders/basic.glsl");
     unsigned int shader = CreateShader(shaderSource.VertexSource, shaderSource.FragmentSource);
-    glUseProgram(shader);
+    GLCall(glUseProgram(shader));
 
+    GLCall(int location = glGetUniformLocation(shader, "u_Color"));
+    ASSERT((location != -1))
+    GLCall(glUniform4f(location, 0.2f, 0.3f, 0.4f, 1.0f));
+
+    GLCall(int offset_location = glGetUniformLocation(shader, "u_Offset"));
+    ASSERT((offset_location != -1))
+    GLCall(glUniform2f(offset_location, 0.0f, 0.0f));
+
+    float r = 0.0f;
+    float increment = 0.05f;
     // Loop until the user closes the window
     while (!glfwWindowShouldClose(window))
     {
         GLCall(glClear(GL_COLOR_BUFFER_BIT));
+        GLCall(glUniform4f(location, r, 0.3f, 0.4f, 1.0f));
+        GLCall(glUniform2f(offset_location, 10 * increment, 10 * increment));
         GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
+
+        if (r > 1.0f || r < 0.0f)
+            increment = -1 * increment;
+
+        r += increment;
+
+        for (int i = 0; i < 8; i++)
+        {
+            positions[i] += increment;
+        }
+
         GLCall(glfwSwapBuffers(window));
         GLCall(glfwPollEvents());
     }
