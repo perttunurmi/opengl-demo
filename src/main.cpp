@@ -2,7 +2,6 @@
 #include <GL/gl.h>
 #include <GLFW/glfw3.h>
 #include <cassert>
-#include <csignal>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -10,45 +9,17 @@
 #include <sstream>
 #include <string>
 
-// clang-format off
-#define STARTUP_FAILED -1
-#define ASSERT(x) if (!x) { raise(SIGTRAP); }
-#define GLCall(x) GLClearError();\
-x;\
-ASSERT(GLLogCall(#x, __FILE__, __LINE__))
-// clang-format on
+#include "Renderer.h"
+#include "VertexBuffer.h"
+#include "IndexBuffer.h"
 
-GLenum lasterror;
+#define STARTUP_FAILED -1
 
 struct ShaderProgramSource
 {
     std::string VertexSource;
     std::string FragmentSource;
 };
-
-// Clears errors
-static void GLClearError()
-{
-    while (glGetError() != GL_NO_ERROR)
-        ;
-}
-
-static bool GLLogCall(const char *function, const char *file, int line)
-{
-    while (GLenum error = glGetError())
-    {
-        // clang-format off
-        std::cerr
-        << "[OpenGL Error]:"
-        << ", ERR ENUM: "    << error
-        << " FUNC: "         << function
-        << "\n";
-        // clang-format on
-        return false;
-    }
-
-    return true;
-}
 
 static ShaderProgramSource ParseShaderFile(const std::string &filepath)
 {
@@ -145,20 +116,24 @@ int main(void)
     if (!glfwInit())
         exit(STARTUP_FAILED);
 
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
     // Create a windowed mode window and
     // its OpenGL context
-    window = glfwCreateWindow(640, 480, "OpenGL DEMO", NULL, NULL);
+    GLCall(window = glfwCreateWindow(640, 480, "OpenGL DEMO", NULL, NULL));
 
     if (!window)
     {
-        glfwTerminate();
+        GLCall(glfwTerminate());
         exit(STARTUP_FAILED);
     }
 
     // Make the window's context current
-    glfwMakeContextCurrent(window);
+    GLCall(glfwMakeContextCurrent(window));
 
-    glfwSwapInterval(1);
+    GLCall(glfwSwapInterval(1));
 
     // Try to initialize glew
     if (glewInit() != GLEW_OK)
@@ -180,20 +155,18 @@ int main(void)
 
     unsigned int indices[] = {0, 1, 2, 2, 3, 0};
 
-    unsigned int array_buffer;
-    GLCall(glGenBuffers(1, &array_buffer));
-    GLCall(glBindBuffer(GL_ARRAY_BUFFER, array_buffer));
-    GLCall(glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(float), positions, GL_STATIC_DRAW));
+    unsigned int vao;
+    GLCall(glGenVertexArrays(1, &vao));
+    GLCall(glBindVertexArray(vao));
+
+    VertexBuffer vb(positions, 4 * 2 * sizeof(float));
 
     GLCall(glEnableVertexAttribArray(0));
     GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0));
 
-    unsigned int index_buffer;
-    GLCall(glGenBuffers(1, &index_buffer));
-    GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer));
-    GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indices, GL_STATIC_DRAW));
+    IndexBuffer ib(indices, 6);
 
-    ShaderProgramSource shaderSource = ParseShaderFile("./res/shaders/basic.glsl");
+    ShaderProgramSource shaderSource = ParseShaderFile("./res/shaders/Basic.glsl");
     unsigned int shader = CreateShader(shaderSource.VertexSource, shaderSource.FragmentSource);
     GLCall(glUseProgram(shader));
 
@@ -205,25 +178,32 @@ int main(void)
     ASSERT((offset_location != -1))
     GLCall(glUniform2f(offset_location, 0.0f, 0.0f));
 
+    GLCall(glBindVertexArray(0));
+    GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+    GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
+    GLCall(glUseProgram(0));
+
     float r = 0.0f;
-    float increment = 0.05f;
+    float increment = 0.02f;
     // Loop until the user closes the window
     while (!glfwWindowShouldClose(window))
     {
         GLCall(glClear(GL_COLOR_BUFFER_BIT));
+
+        GLCall(glUseProgram(shader));
+
+        GLCall(glBindVertexArray(vao));
+        ib.Bind();
+
         GLCall(glUniform4f(location, r, 0.3f, 0.4f, 1.0f));
-        GLCall(glUniform2f(offset_location, 10 * increment, 10 * increment));
+        GLCall(glUniform2f(offset_location, r - 0.5f, r - 0.5f));
+
         GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
 
         if (r > 1.0f || r < 0.0f)
             increment = -1 * increment;
 
         r += increment;
-
-        for (int i = 0; i < 8; i++)
-        {
-            positions[i] += increment;
-        }
 
         GLCall(glfwSwapBuffers(window));
         GLCall(glfwPollEvents());

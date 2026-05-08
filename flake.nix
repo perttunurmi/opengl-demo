@@ -1,5 +1,5 @@
 {
-  description = "Build and devShell for TIEA3112";
+  description = "Build and devShell for OpenGL Demo";
 
   inputs.nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
 
@@ -15,6 +15,7 @@
     let
       deps = with pkgs; [
         gcc
+        libGL
         glfw
         glew
       ];
@@ -23,7 +24,7 @@
       inherit self;
 
       # IMPORTANT: This output defines the devShell
-      # To evalute run `nix develop` or use direnv
+      # To evaluate run `nix develop` or use direnv
       devShells.${system}.default = import ./shell.nix { inherit pkgs deps; };
 
       # IMPORTANT: This output defines the build
@@ -31,8 +32,7 @@
       packages.${system}.default =
         let
           OUTPUT_NAME = "demo-cpp";
-          CFLAGS = "-Wall -lGL -lglfw -lGLEW";
-          MAIN = src/main.cpp;
+          CFLAGS = "-std=c++23 -Wextra -g -Wall -lGL -lglfw -lGLEW";
         in
 
         pkgs.stdenv.mkDerivation {
@@ -42,11 +42,15 @@
 
           nativeBuildInputs = deps;
 
+          buildInputs = with pkgs; [
+            glfw
+            glew
+            mesa
+          ];
+
           buildPhase = ''
             mkdir -p $out/bin
-            mkdir -p $out/frames
-            export FRAME_DIR=$out/frames
-            g++ ${MAIN} -o ${OUTPUT_NAME} ${CFLAGS}
+            g++  *.cpp -o ${OUTPUT_NAME} ${CFLAGS}
           '';
 
           installPhase = ''

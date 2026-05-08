@@ -6,7 +6,11 @@ uniform vec2 u_Offset;
 
 void main()
 {
-    gl_Position = vec4(position.x + u_Offset.x, position.y + u_Offset.y, 0, 1);
+    gl_Position = vec4(
+                position.x + u_Offset.x,
+                position.y + u_Offset.y,
+                0, 1
+                );
 };
 
 #shader fragment
