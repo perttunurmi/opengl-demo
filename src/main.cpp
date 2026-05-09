@@ -64,10 +64,6 @@ int main(void)
 
         unsigned int indices[] = {0, 1, 2, 2, 3, 0};
 
-        unsigned int vao;
-        GLCall(glGenVertexArrays(1, &vao));
-        GLCall(glBindVertexArray(vao));
-
         VertexArray va;
         VertexBuffer vb(positions, 4 * 2 * sizeof(float));
 
@@ -84,26 +80,25 @@ int main(void)
         shader.SetUniform2("u_Offset", 0.0f, 0.0f);
 
         vb.Unbind();
-        va.UnBind();
+        va.Unbind();
         ib.Unbind();
         shader.Unbind();
+
+        Renderer renderer;
 
         float r = 0.0f;
         float increment = 0.02f;
         // Loop until the user closes the window
         while (!glfwWindowShouldClose(window))
         {
-            GLCall(glClear(GL_COLOR_BUFFER_BIT));
+            renderer.Clear();
 
             shader.Bind();
-
-            va.Bind();
-            ib.Bind();
 
             shader.SetUniform4("u_Color", r, 0.3f, 0.4f, 1.0f);
             shader.SetUniform2("u_Offset", r - 0.5f, r - 0.5f);
 
-            GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
+            renderer.Draw(va, ib, shader);
 
             if (r > 1.0f || r < 0.0f)
                 increment = -1 * increment;
