@@ -37,7 +37,8 @@ class VertexBufferLayout
     unsigned int m_Stride;
 
   public:
-    VertexBufferLayout() : m_Stride(0) {};
+    VertexBufferLayout()
+        : m_Stride(0) {};
 
     void Push(unsigned int type, unsigned int count)
     {

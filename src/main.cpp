@@ -8,6 +8,7 @@
 #include <string>
 
 #include "Renderer.h"
+#include "Texture.h"
 #include "VertexBufferLayout.h"
 #include "VertexArray.h"
 #include "VertexBuffer.h"
@@ -24,6 +25,7 @@ int main(void)
     if (!glfwInit())
         exit(STARTUP_FAILED);
 
+    // Set GL_VERSION and turn Compatibility Profile off
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -41,6 +43,7 @@ int main(void)
     // Make the window's context current
     GLCall(glfwMakeContextCurrent(window));
 
+    // Vsync
     GLCall(glfwSwapInterval(1));
 
     // Try to initialize glew
@@ -55,19 +58,22 @@ int main(void)
     {
         // clang-format off
         float positions[] = {
-            -0.5f, -0.5f,
-             0.5f, -0.5f,
-             0.5f,  0.5f,
-            -0.5f,  0.5f,
+            -0.5f, -0.5f, 0.0f, 0.0f,
+             0.5f, -0.5f, 1.0f, 0.0f,
+             0.5f,  0.5f, 1.0f, 1.0f,
+            -0.5f,  0.5f, 0.0f, 1.0f
         };
         // clang-format on
 
         unsigned int indices[] = {0, 1, 2, 2, 3, 0};
 
+        GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+
         VertexArray va;
-        VertexBuffer vb(positions, 4 * 2 * sizeof(float));
+        VertexBuffer vb(positions, 4 * 4 * sizeof(float));
 
         VertexBufferLayout layout;
+        layout.Push(GL_FLOAT, 2);
         layout.Push(GL_FLOAT, 2);
         va.AddBuffer(vb, layout);
 
@@ -76,8 +82,8 @@ int main(void)
         Shader shader("./res/shaders/Basic.glsl");
         shader.Bind();
 
-        shader.SetUniform4("u_Color", 0.2f, 0.3f, 0.4f, 1.0f);
-        shader.SetUniform2("u_Offset", 0.0f, 0.0f);
+        shader.SetUniform4f("u_Color", 0.2f, 0.3f, 0.4f, 1.0f);
+        shader.SetUniform2f("u_Offset", 0.0f, 0.0f);
 
         vb.Unbind();
         va.Unbind();
@@ -88,6 +94,7 @@ int main(void)
 
         float r = 0.0f;
         float increment = 0.02f;
+
         // Loop until the user closes the window
         while (!glfwWindowShouldClose(window))
         {
@@ -95,8 +102,12 @@ int main(void)
 
             shader.Bind();
 
-            shader.SetUniform4("u_Color", r, 0.3f, 0.4f, 1.0f);
-            shader.SetUniform2("u_Offset", r - 0.5f, r - 0.5f);
+            shader.SetUniform4f("u_Color", r, 0.3f, 0.4f, 1.0f);
+            shader.SetUniform2f("u_Offset", r - 0.5f, r - 0.5f);
+
+            Texture texture("res/textures/flipped_hearth.ppm");
+            texture.Bind();
+            shader.SetUniform1f("u_Texture", 0);
 
             renderer.Draw(va, ib, shader);
 
@@ -105,8 +116,8 @@ int main(void)
 
             r += increment;
 
-            GLCall(glfwSwapBuffers(window));
-            GLCall(glfwPollEvents());
+            glfwSwapBuffers(window);
+            glfwPollEvents();
         }
 
         shader.Unbind();

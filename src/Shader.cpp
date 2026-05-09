@@ -8,7 +8,8 @@
 #include <ostream>
 #include <sstream>
 
-Shader::Shader(const std::string &filepath) : m_Filepath(filepath), m_RendererID(0)
+Shader::Shader(const std::string &filepath)
+    : m_Filepath(filepath), m_RendererID(0)
 {
     ShaderProgramSource source = ParseShader(filepath);
     m_RendererID = CreateShader(source.VertexSource, source.FragmentSource);
@@ -118,17 +119,22 @@ void Shader::Unbind() const
     GLCall(glUseProgram(0));
 }
 
-void Shader::SetUniform4(const std::string &name, float v0, float v1, float v2, float v3)
+void Shader::SetUniform1f(const std::string &name, int v1)
+{
+    GLCall(glUniform1i(GetUniformLocation(name), v1));
+}
+
+void Shader::SetUniform4f(const std::string &name, float v0, float v1, float v2, float v3)
 {
     GLCall(glUniform4f(GetUniformLocation(name), v0, v1, v2, v3));
 }
 
-void Shader::SetUniform2(const std::string &name, float v0, float v1)
+void Shader::SetUniform2f(const std::string &name, float v0, float v1)
 {
     GLCall(glUniform2f(GetUniformLocation(name), v0, v1));
 }
 
-unsigned int Shader::GetUniformLocation(const std::string &name)
+int Shader::GetUniformLocation(const std::string &name)
 {
     if (m_UniformLocationCache.find(name) != m_UniformLocationCache.end())
         return m_UniformLocationCache[name];
