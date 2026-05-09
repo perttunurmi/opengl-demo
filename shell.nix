@@ -1,6 +1,7 @@
 {
   pkgs ? import <nixpkgs> { },
   deps ? [ ],
+  CFLAGS ? "",
 }:
 pkgs.mkShell {
   nativeBuildInputs =
@@ -8,11 +9,14 @@ pkgs.mkShell {
     [
       git
       gdb
+      bear
+      just
     ]
     ++ deps;
 
   shellHook = ''
     if [ -z "$NIX_SILENT" ]; then
+        export CFLAGS='${CFLAGS}'
         uname -a
     fi
   '';

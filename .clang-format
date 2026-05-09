@@ -5,3 +5,5 @@ Language: Cpp
 DerivePointerAlignment: false
 PointerAlignment: Right
 SortIncludes: false
+AlwaysBreakTemplateDeclarations: Yes
+PackConstructorInitializers: NextLineOnly

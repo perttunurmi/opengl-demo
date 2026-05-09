@@ -1,5 +1,5 @@
 #include "Texture.h"
-#include "ImageParser.h"
+#include "ImageParser.hpp"
 #include "Renderer.h"
 
 Texture::Texture(const std::string &path)

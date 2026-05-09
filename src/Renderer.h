@@ -7,11 +7,16 @@
 #include <csignal>
 
 // clang-format off
-#define ASSERT(x) if (!x) { raise(SIGTRAP); }
+#define ASSERT(x) if (!x) { breakpoint(); }
 #define GLCall(x) GLClearError();\
 x;\
 ASSERT(GLLogCall(#x, __FILE__, __LINE__))
 // clang-format on
+
+inline void breakpoint()
+{
+    raise(SIGTRAP);
+};
 
 void GLClearError();
 bool GLLogCall(const char *function, const char *file, int line);

@@ -1,4 +1,3 @@
-#include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <cstdlib>
@@ -51,7 +50,7 @@ inline PPM_IMAGE ParsePPM(std::string &filename)
     }
 
     ifs.read((char *)data, (std::streamsize)buffer_size);
-    if (ifs.gcount() != buffer_size)
+    if (ifs.gcount() != (std::streamsize)buffer_size)
     {
         std::free(data);
         throw std::runtime_error("Reading PPM IMAGE failed");

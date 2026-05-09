@@ -67,6 +67,7 @@ int main(void)
 
         unsigned int indices[] = {0, 1, 2, 2, 3, 0};
 
+        GLCall(glEnable(GL_BLEND));
         GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
         VertexArray va;
