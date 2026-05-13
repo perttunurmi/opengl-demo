@@ -26,6 +26,7 @@ class Shader
     void SetUniform1f(const std::string &name, int v1);
     void SetUniform4f(const std::string &name, float v0, float v1, float v2, float v3);
     void SetUniform2f(const std::string &name, float v0, float v1);
+    void SetUniform4M(const std::string &name, const float matrix[16]);
 
   private:
     ShaderProgramSource ParseShader(const std::string &filepath);

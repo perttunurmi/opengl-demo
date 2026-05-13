@@ -6,15 +6,16 @@ layout(location = 1) in vec2 texCoord;
 
 out vec2 v_TexCoord;
 
+uniform mat4 u_MVP;
 uniform vec2 u_Offset;
 
 void main()
 {
-    gl_Position = vec4(
-            position.x + u_Offset.x,
-            position.y + u_Offset.y,
-            0, 1
-        );
+    gl_Position = u_MVP * vec4(
+                position.x + u_Offset.x,
+                position.y + u_Offset.y,
+                0, 1
+            );
     v_TexCoord = texCoord;
 };
 

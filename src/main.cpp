@@ -14,11 +14,14 @@
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
 #include "Shader.h"
+#include "Mat4.hpp"
 
 #define STARTUP_FAILED -1
 
 int main(void)
 {
+    Mat4 proj = Mat4::Orthographic(-4.0f, 4.0f, -3.0f, 3.0f, -1.0f, 1.0f);
+
     GLFWwindow *window;
 
     // Initialize the library
@@ -58,6 +61,7 @@ int main(void)
     {
         // clang-format off
         float positions[] = {
+            //  x,     y,
             -0.5f, -0.5f, 0.0f, 0.0f,
              0.5f, -0.5f, 1.0f, 0.0f,
              0.5f,  0.5f, 1.0f, 1.0f,
@@ -85,6 +89,7 @@ int main(void)
 
         shader.SetUniform4f("u_Color", 0.2f, 0.3f, 0.4f, 1.0f);
         shader.SetUniform2f("u_Offset", 0.0f, 0.0f);
+        shader.SetUniform4M("u_MVP", proj.data());
 
         vb.Unbind();
         va.Unbind();
@@ -104,9 +109,9 @@ int main(void)
             shader.Bind();
 
             shader.SetUniform4f("u_Color", r, 0.3f, 0.4f, 1.0f);
-            shader.SetUniform2f("u_Offset", r - 0.5f, r - 0.5f);
+            shader.SetUniform2f("u_Offset", 8 * r - 4.0f + 0.5f, 6 * r - 3.0f + 0.5f);
 
-            Texture texture("res/textures/flipped_hearth.ppm");
+            Texture texture("res/textures/test.ppm");
             texture.Bind();
             shader.SetUniform1f("u_Texture", 0);
 
